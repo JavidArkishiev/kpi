@@ -244,4 +244,23 @@ public class KpiService {
                 .collect(Collectors.toList());
     }
 
+    public void makeDeActive(Long kpiId) throws ResourceExistException {
+        var kpi = kpiRepository.findById(kpiId)
+                .orElseThrow(() -> new ResourceNotFoundException("KPI can not found"));
+        if (!kpi.getIsActive()) {
+            throw new ResourceExistException("This KPI already deActivated");
+        }
+        kpi.setIsActive(false);
+        kpiRepository.save(kpi);
+    }
+
+    public void makeActive(Long kpiId) throws ResourceExistException {
+        var kpi = kpiRepository.findById(kpiId)
+                .orElseThrow(() -> new ResourceNotFoundException("KPI can not found"));
+        if (kpi.getIsActive()) {
+            throw new ResourceExistException("This KPI already activated");
+        }
+        kpi.setIsActive(true);
+        kpiRepository.save(kpi);
+    }
 }

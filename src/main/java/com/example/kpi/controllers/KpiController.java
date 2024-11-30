@@ -136,4 +136,18 @@ public class KpiController {
         kpiService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("make-deActive")
+    @PreAuthorize("hasAuthority('CEO')")
+    public ResponseEntity<Void> makeDeActive(@RequestParam Long kpiId) throws ResourceExistException {
+        kpiService.makeDeActive(kpiId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("make-active/{kpiId}")
+    @PreAuthorize("hasAuthority('CEO')")
+    public ResponseEntity<Void> makeActive(@PathVariable Long kpiId) throws ResourceExistException {
+        kpiService.makeActive(kpiId);
+        return ResponseEntity.noContent().build();
+    }
 }
