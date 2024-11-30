@@ -45,19 +45,9 @@ public class KpiController {
      *
      * @return Список KPI, превышающих порог.
      */
-    @GetMapping("/exceeding-threshold")
-    public ResponseEntity<List<Kpi>> getExceedingThresholdKpis() {
-        return ResponseEntity.ok(kpiService.findExceedingThreshold());
-    }
-
-    /**
-     * Возвращает список KPI, название которых начинается с указанного префикса.
-     *
-     * @param prefix Префикс названия KPI.
-     * @return Список KPI, соответствующих префиксу.
-     */
     @GetMapping("/by-name-prefix/{prefix}")
-    public ResponseEntity<List<Kpi>> getKpiByNamePrefix(@PathVariable String prefix) {
+    @PreAuthorize("hasAuthority('CEO')")
+    public ResponseEntity<List<KpiResponse>> getKpiByNamePrefix(@PathVariable String prefix) {
         return ResponseEntity.ok(kpiService.findByNamePrefix(prefix));
     }
 
@@ -68,19 +58,18 @@ public class KpiController {
      * @param max Максимальное значение.
      * @return Список KPI в указанном диапазоне.
      */
-    @GetMapping("/by-value-range")
-    public ResponseEntity<List<KpiResponse>> getKpiByValueRange(
-            @RequestParam Double min,
-            @RequestParam Double max) throws ResourceExistException {
-        return ResponseEntity.ok(kpiService.findByValueRange(min, max));
+
+    @GetMapping("/filter")
+    @PreAuthorize("hasAuthority('CEO')")
+    public ResponseEntity<List<KpiResponse>> getFilteredKpis(
+            @RequestParam(required = false) Double minValue,
+            @RequestParam(required = false) Double maxValue,
+            @RequestParam(required = false) String namePrefix) {
+
+        List<KpiResponse> filteredKpis = kpiService.getFilteredKpis(minValue, maxValue, namePrefix);
+        return ResponseEntity.ok(filteredKpis);
     }
 
-    /**
-     * Возвращает список KPI, принадлежащих указанному пользователю.
-     *
-     * @param userId Идентификатор пользователя.
-     * @return Список KPI пользователя.
-     */
     @GetMapping("user/{userId}")
     @PreAuthorize("hasAnyAuthority('EMPLOYEE','CEO')")
     public ResponseEntity<List<KpiResponse>> getKpiByUser(@PathVariable Long userId) {

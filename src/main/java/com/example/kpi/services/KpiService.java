@@ -12,11 +12,17 @@ import com.example.kpi.repositories.KPIRepository;
 import com.example.kpi.repositories.ReportRepository;
 import com.example.kpi.repositories.UserRepository;
 import com.example.kpi.security.JwtTokenProvider;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,6 +42,8 @@ public class KpiService {
     private final JwtTokenProvider jwtTokenProvider;
     private final ReportRepository reportRepository;
     private final KpiMapper kpiMapper;
+    private final EntityManager entityManager;
+
 
     /**
      * Возвращает список всех активных KPI.
@@ -66,8 +74,13 @@ public class KpiService {
      * @param prefix Префикс названия KPI.
      * @return Список KPI, соответствующих префиксу.
      */
-    public List<Kpi> findByNamePrefix(String prefix) {
-        return kpiRepository.findByNameStartingWith(prefix);
+    public List<KpiResponse> findByNamePrefix(String prefix) {
+        var kpiList = kpiRepository.findByNameStartingWith(prefix);
+        if (kpiList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return kpiMapper.mapToKpiResponse(kpiList);
+
     }
 
     /**
@@ -203,4 +216,32 @@ public class KpiService {
         return kpiMapper.toKpiResponse(kpi);
 
     }
+
+    public List<KpiResponse> getFilteredKpis(Double minValue, Double maxValue, String namePrefix) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Kpi> query = cb.createQuery(Kpi.class);
+        Root<Kpi> root = query.from(Kpi.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (minValue != null) {
+            predicates.add(cb.greaterThanOrEqualTo(root.get("value"), minValue));
+        }
+
+        if (maxValue != null) {
+            predicates.add(cb.lessThanOrEqualTo(root.get("value"), maxValue));
+        }
+
+        if (namePrefix != null) {
+            predicates.add(cb.like(root.get("name"), namePrefix + "%"));
+        }
+
+        query.where(cb.and(predicates.toArray(new Predicate[0])));
+
+        List<Kpi> result = entityManager.createQuery(query).getResultList();
+        return result.stream()
+                .map(kpiMapper::toKpiResponse)
+                .collect(Collectors.toList());
+    }
+
 }
