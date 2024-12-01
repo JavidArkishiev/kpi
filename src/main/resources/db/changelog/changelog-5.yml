@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 5
+      author: "Arkishiev"
+      changes:
+        - createTable:
+            tableName: report_kpi
+            columns:
+              - column:
+                  name: report_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: kpi_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: report_kpi
+            baseColumnNames: report_id
+            referencedTableName: reports
+            referencedColumnNames: id
+            constraintName: fk_kpi_report
+
+        - addForeignKeyConstraint:
+            baseTableName: report_kpi
+            baseColumnNames: kpi_id
+            referencedTableName: kpis
+            referencedColumnNames: id
+            constraintName: fk_report_kpi
+
+
+
+
+

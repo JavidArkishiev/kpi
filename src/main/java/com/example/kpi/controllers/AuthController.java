@@ -5,6 +5,7 @@ import com.example.kpi.dto.LoginRequest;
 import com.example.kpi.dto.UserRequest;
 import com.example.kpi.entities.User;
 import com.example.kpi.enums.Role;
+import com.example.kpi.exceptions.ResourceExistException;
 import com.example.kpi.services.AuthService;
 import com.example.kpi.services.UserService;
 import jakarta.validation.Valid;
@@ -29,7 +30,7 @@ public class AuthController {
      * @return Успешное сообщение.
      */
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody @Valid UserRequest userRequest) {
+    public ResponseEntity<String> register(@RequestBody @Valid UserRequest userRequest) throws ResourceExistException {
         authService.register(userRequest);
         return ResponseEntity.ok("Регистрация прошла успешно!");
     }

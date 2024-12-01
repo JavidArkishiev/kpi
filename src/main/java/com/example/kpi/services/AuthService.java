@@ -2,6 +2,7 @@ package com.example.kpi.services;
 
 import com.example.kpi.dto.UserRequest;
 import com.example.kpi.entities.User;
+import com.example.kpi.exceptions.ResourceExistException;
 import com.example.kpi.exceptions.ResourceNotFoundException;
 import com.example.kpi.repositories.UserRepository;
 import com.example.kpi.security.JwtTokenProvider;
@@ -25,9 +26,9 @@ public class AuthService {
      *
      * @param userRequest Данные нового пользователя.
      */
-    public void register(UserRequest userRequest) {
+    public void register(UserRequest userRequest) throws ResourceExistException {
         if (userRepository.existsByEmail(userRequest.email())) {
-            throw new IllegalArgumentException("Пользователь с таким email уже существует.");
+            throw new ResourceExistException("Пользователь с таким email уже существует.");
         }
 
         User user = new User();
